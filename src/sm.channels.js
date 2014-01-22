@@ -6,9 +6,6 @@
 	ontology.addTerm('user');
 	ontology.addTerm('system');
 	ontology.addTerm('action');
-	ontology.addTerm('click');
-	ontology.addTerm('doubleClick');
-	ontology.addTerm('keyPress');
 	ontology.addTerm('task');
 	ontology.addTerm('initialize');
 	ontology.addTerm('insert');
@@ -28,9 +25,6 @@
 	ontology.system.isA(ontology.thing);
 	ontology.system.relatesTo(ontology.performs, ontology.task);
 	ontology.messenger.isA(ontology.thing);
-	ontology.click.isA(ontology.action);
-	ontology.doubleClick.isA(ontology.action);
-	ontology.keyPress.isA(ontology.action);
 	ontology.get.isA(ontology.task);
 	ontology.set.isA(ontology.task);
 	ontology.success.isA(ontology.messenger);
@@ -40,6 +34,7 @@
 	ontology.remove.isA(ontology.task);
 	ontology.performs.hasRange(ontology.action).hasRange(ontology.task);
 	ontology.reactsTo.hasRange(ontology.action).hasDomain(ontology.system);
+
 
 	function activator(model) {
 

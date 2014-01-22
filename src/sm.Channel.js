@@ -146,5 +146,9 @@
 		return this;
 	};
 
+	Channel.prototype.and = function(channel) {
+		this._subscribers =	this._subscribers.concat(channel._subscribers);
+	};
+
 	sm.behavior.extendedBy(Channel);
 }(smallmachine));
