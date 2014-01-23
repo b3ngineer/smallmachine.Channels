@@ -3,6 +3,7 @@
 
 	// concepts
 	ontology.addTerm('thing');
+	ontology.addTerm('all');
 	ontology.addTerm('user');
 	ontology.addTerm('system');
 	ontology.addTerm('action');
@@ -20,6 +21,7 @@
 	ontology.addTerm('performs');
 	ontology.addTerm('reactsTo');
 
+	ontology.all.isA(ontology.thing);
 	ontology.user.isA(ontology.thing);
 	ontology.user.relatesTo(ontology.performs, ontology.action);
 	ontology.system.isA(ontology.thing);

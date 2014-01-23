@@ -11,21 +11,21 @@ describe('sm.channels', function() {
 	describe('publish politics', function() {
 		it ('should not notify a delegate if a subscriber claims authority', function() {
 			var value = false;
-			target.user.click.subscribe(function(message) { return { update : function(message){ value = message; } } });
-			target.user.click.subscribe(function(message) { return true; });
-			target.user.click.publish(true);
+			target.user.action.subscribe(function(message) { return { update : function(message){ value = message; } } });
+			target.user.action.subscribe(function(message) { return true; });
+			target.user.action.publish(true);
 			expect(value).toBe(false);
-			delete target.user.click._subscribers;
+			delete target.user.action._subscribers;
 		});
 	});
 
 	describe('publishing to concepts', function() {
-		it('should notify user.click if action is published to', function() {
+		it('should notify user.action if user is published to', function() {
 			var value = false;
-			target.user.click.subscribe({ update : function(message){ value = message; } });
-			target.action.publish(true);
+			target.user.action.subscribe({ update : function(message){ value = message; } });
+			target.user.publish(true);
 			expect(value).toBe(true);
-			delete target.user.click._subscribers;
+			delete target.user.action._subscribers;
 		});
 	});
 
@@ -33,7 +33,7 @@ describe('sm.channels', function() {
         it('should notify subscribers to user.performs when any action is published to', function() {
             var notified = null;
             target.user.performs.subscribe({ update : function(result) { notified = result; }, cancel : function(result) { } }); 
-            target.keyPress.publish(function(){ return 123; });
+            target.action.publish(function(){ return 123; });
             expect(notified).toBe(123);
 			delete target.user.performs._subscribers;
         });
@@ -55,7 +55,7 @@ describe('sm.channels', function() {
                 cancel : function(result) {
                 }
             });
-            target.keyPress.publish(function(){ return 123; });
+            target.action.publish(function(){ return 123; });
             expect(notified).toBe(123);
 			delete target.system.reactsTo._subscribers;
         });
@@ -63,12 +63,56 @@ describe('sm.channels', function() {
         it('should notify subscribers to target.performs when any action or task is published to', function() {
             var notified = 0;
             target.performs.subscribe({ update : function(result) { notified++; }, cancel : function(result) { } });
-            target.user.keyPress.publish(function(){ return 123; });
+            target.user.action.publish(function(){ return 123; });
             target.system.get.publish(function(){ return 123; });
             expect(notified).toBe(2);
 			delete target.performs._subscribers;
         });
     });
+
+	describe('backchannels', function() {
+		it ('should allow adding a backchannel to a channel', function() {
+			target.system.backchannel(target.all);
+			expect(target.system._backchannels.length).toBe(1);
+			delete target.system._backchannels;
+		});
+
+		it('should notify a backchannel when the channel is notified', function() {
+			var notified = false;
+			target.system.backchannel(target.all);
+			target.all.subscribe(function(notification) {
+				notified = notification.message;
+			});
+			target.system.publish(true);
+			expect(notified).toBe(true);
+			delete target.all._subscribers;
+			delete target.system._backchannels;
+		});
+
+		it('should include the channel value to a backchannel when the channel is notified', function() {
+			var notified = false;
+			target.system.backchannel(target.all);
+			target.all.subscribe(function(notification) {
+				notified = notification.value;
+			});
+			target.system.publish(true);
+			expect(notified).toBe('system');
+			delete target.all._subscribers;
+			delete target.system._backchannels;
+		});
+
+		it('should include the channel id to a backchannel when the channel is notified', function() {
+			var notified;
+			target.system.backchannel(target.all);
+			target.all.subscribe(function(notification) {
+				notified = notification.id;
+			});
+			target.system.publish(true);
+			expect(notified).toBeDefined();
+			delete target.all._subscribers;
+			delete target.system._backchannels;
+		});
+	});
 
 	describe('subscriptions', function() {
 		it('should add a NamedValueCollection to a model', function() {
@@ -131,6 +175,26 @@ describe('sm.channels', function() {
 			target.system.publish(true);
 			expect(hit1).toBe('test1');
 			expect(hit2).toBe('test2');
+		});
+
+		it('should have access to the subscribing method when using jQuery extension', function() {
+			var hit = false;
+			jQuery('#test3').subscribe(target.initialize, function(message) { hit = this.subscriber; });
+			target.initialize.publish(true);
+			expect(hit).not.toBe(false);
+		});
+
+		it('setting lifetime to 0 inside a subscriber while using the jQuery extension should unsubscribe it', function() {
+			expect(target.remove._subscribers).not.toBeDefined();
+			jQuery('#test4').subscribe(target.remove, function(message) { this.subscriber.lifetime = 0; });
+			expect(target.remove._subscribers).toBeDefined();
+			var counterA = 0;
+			for (var s in target.remove._subscribers) counterA++;
+			expect(counterA).toBe(1);
+			target.remove.publish(true);
+			var counterB = 0;
+			for (var s in target.remove._subscribers) counterB++;
+			expect(counterB).toBe(0);
 		});
 	});
 });

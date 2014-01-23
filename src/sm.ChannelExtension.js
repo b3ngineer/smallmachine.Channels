@@ -7,6 +7,8 @@
 				return this.each(function() {
 					var element = this, callback = fn;
 					channel.subscribe(function(message){
+						var subscriber = this;
+						element.subscriber = subscriber;
 						callback.apply(element,[message]);
 					});	
 				});

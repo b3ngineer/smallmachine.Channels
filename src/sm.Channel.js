@@ -8,6 +8,13 @@
 	};
 
 	Channel.prototype._name = 'Channel';
+
+	Channel.prototype.backchannel = function(channel) {
+		if (typeof this._backchannels === 'undefined') {
+			this._backchannels = [];
+		}
+		this._backchannels.push(channel);
+	}
     
 	Channel.prototype.forward = function(message, recipients) {
 		if (this._value != null) {
@@ -67,7 +74,7 @@
 			delegates = {},
 			delegateCount = 0,
 			deference = [];
-
+		
 		for (var id in subscribers) {
 			var response = subscribers[id].update(message);
 			if (typeof subscribers[id] === 'undefined') {
@@ -116,6 +123,12 @@
 				return this;
 			}
 		}
+		if (typeof this._backchannels !== 'undefined') {
+			for (var i = 0, length = this._backchannels.length; i < length; i++) {
+				var backchannel = this._backchannels[i];
+				backchannel.notify({ value : this._value, id : this._id, message : message }, backchannel._subscribers);
+			}
+		}
 		if (typeof this._subscribers === 'undefined') {
 			this.forward(message, recipients);
 			return this;
@@ -144,10 +157,6 @@
 			}]);
 		};
 		return this;
-	};
-
-	Channel.prototype.and = function(channel) {
-		this._subscribers =	this._subscribers.concat(channel._subscribers);
 	};
 
 	sm.behavior.extendedBy(Channel);
