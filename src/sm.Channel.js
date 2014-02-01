@@ -61,7 +61,7 @@
 			this._subscribers[subscriberId] = { update : subscriber, lifetime : 1 };
 		}
 		else{
-			if (typeof subscriber.lifecycle === 'undefined') {
+			if (typeof subscriber.lifetime === 'undefined') {
 				subscriber.lifetime = 1;
 			}
 			this._subscribers[subscriberId] = subscriber;
